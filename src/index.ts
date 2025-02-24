@@ -105,6 +105,32 @@ app.delete('/api/v1/content', userMiddleware, async (req,res) =>{
     }
 });
 
+app.put('/api/v1/content', userMiddleware, async (req, res) => {
+    const { contentId, title, link, type } = req.body;
+
+    if (!contentId || !title || !link || !type) {
+        res.status(400).json({ message: "All fields are required" });
+        return;
+    }
+
+    try {
+        const updatedContent = await ContentModel.findOneAndUpdate(
+            { _id: contentId, userId: req.userId },
+            { title, link, type },
+            { new: true }
+        );
+
+        if (!updatedContent) {
+            res.status(404).json({ message: "Content not found or unauthorized" });
+            return;
+        }
+
+        res.json({ message: "Updated successfully", content: updatedContent });
+    } catch (error) {
+        console.error("Error updating content:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 app.post('/api/v1/brain/share',userMiddleware, async(req, res) => { 
     const share = req.body.share
